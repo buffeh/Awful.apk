@@ -57,6 +57,7 @@ public abstract class AwfulHtmlPage {
     static final String[] JS_FILES = {
             "polyfills.js",
             "twitterwidget.js",
+            "imgurproxy.js",
             "longtap.js",
             "jsonp.js",
             "embedding.js",
