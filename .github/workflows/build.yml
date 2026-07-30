@@ -29,19 +29,29 @@ jobs:
       - name: Restore debug signing key
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
-        if: ${{ env.DEBUG_KEYSTORE_BASE64 != '' }}
         run: |
-          mkdir -p ~/.android
-          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+          if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+            mkdir -p ~/.android
+            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+            echo "Debug keystore restored."
+          else
+            echo "No DEBUG_KEYSTORE_BASE64 secret set - a throwaway debug key will be generated."
+          fi
 
       - name: Build the debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Publish the APK as a release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           APK=$(find . -path '*/build/outputs/apk/debug/*.apk' | head -1)
+          if [ -z "$APK" ]; then
+            echo "No APK found."
+            exit 1
+          fi
           echo "Found APK at $APK"
           gh release create "build-${{ github.run_number }}" "$APK" \
             --title "Build ${{ github.run_number }}" \
