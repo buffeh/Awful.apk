@@ -51,7 +51,7 @@ function proxyImgurImages(root) {
 }
 
 /**
- * Rewrites Imgur images already on the page, and any added later.
+ * Rewrites Imgur images already on the page, and any added or changed later.
  */
 function imgurProxyInit() {
 	proxyImgurImages(document);
@@ -61,6 +61,14 @@ function imgurProxyInit() {
 	}
 	var observer = new MutationObserver(function onMutations(mutations) {
 		mutations.forEach(function eachMutation(mutation) {
+			// An existing image had its source changed, e.g. by tapping
+			// a link to display the image it points to
+			if (mutation.type === 'attributes') {
+				if (mutation.target.tagName === 'IMG') {
+					proxyImgurImage(mutation.target);
+				}
+				return;
+			}
 			Array.prototype.forEach.call(mutation.addedNodes, function eachNode(node) {
 				if (node.nodeType !== 1) {
 					return;
@@ -73,7 +81,12 @@ function imgurProxyInit() {
 			});
 		});
 	});
-	observer.observe(document.documentElement, {childList: true, subtree: true});
+	observer.observe(document.documentElement, {
+		childList: true,
+		subtree: true,
+		attributes: true,
+		attributeFilter: ['src']
+	});
 }
 
 if (document.readyState === 'loading') {

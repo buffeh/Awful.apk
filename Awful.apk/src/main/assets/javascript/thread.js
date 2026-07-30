@@ -300,11 +300,16 @@ function showReadPosts() {
 function showInlineImage(url) {
 	var LOADING = 'loading';
 	var FROZEN_GIF = 'playGif';
-
 	if (url.startsWith('https://forums.somethingawful.com/attachment.php?')) {
 		url = url.split('/')[3];
 	}
-
+	// Imgur blocks some regions, so the image may need loading via a proxy.
+	// The links in the post keep their original URLs, so this is only used
+	// for actually fetching the image - see imgurproxy.js
+	var imageUrl = url;
+	if (typeof needsImgurProxy === 'function' && needsImgurProxy(url)) {
+		imageUrl = proxyImgurUrl(url);
+	}
 	/**
 	 * Adds an empty Image Element to the Link if the link is not around a gif
 	 * @param {Element} link Link Element
@@ -319,14 +324,13 @@ function showInlineImage(url) {
 			link.classList.add(LOADING);
 		}
 	}
-
 	/**
 	 * Inlines the loaded image
 	 * @param {Element} link The link the image is wrapping
 	 */
 	function inlineImage(link) {
 		var image = link.querySelector('img');
-		image.src = url;
+		image.src = imageUrl;
 		image.style.height = 'auto';
 		image.style.width = 'auto';
 		link.classList.remove(LOADING);
@@ -335,16 +339,14 @@ function showInlineImage(url) {
 	// skip anything that's already loading/loaded
 	var imageLinks = document.body.querySelectorAll('a[href="' + url + '"]:not(.loading)');
 	imageLinks.forEach(addEmptyImg);
-
 	var pseudoImage = document.createElement('img');
-	pseudoImage.src = url;
+	pseudoImage.src = imageUrl;
 	pseudoImage.addEventListener('load', function loadHandler() {
 		// when the image is loaded, inline it everywhere and update the links
 		imageLinks.forEach(inlineImage);
 		pseudoImage.remove();
 	});
 }
-
 /**
  * Changes the font-face of the webview
  * @param {String} font The name of the font

@@ -102,6 +102,7 @@ import com.ferg.awfulapp.thread.AwfulURL;
 import com.ferg.awfulapp.thread.AwfulURL.TYPE;
 import com.ferg.awfulapp.util.AwfulError;
 import com.ferg.awfulapp.util.AwfulUtils;
+import com.ferg.awfulapp.util.ImgurProxy;
 import com.ferg.awfulapp.webview.AwfulWebView;
 import com.ferg.awfulapp.webview.LoggingWebChromeClient;
 import com.ferg.awfulapp.webview.WebViewJsInterface;
@@ -1382,7 +1383,7 @@ public class ThreadDisplayFragment extends AwfulFragment implements NavigationEv
 
 	public void displayImage(String url){
 		Intent intent = BasicActivity.Companion.intentFor(ZoomViewFragment.class, getActivity(), "");
-		intent.putExtra(ZoomViewFragment.EXTRA_IMAGE_URL, url);
+		intent.putExtra(ZoomViewFragment.EXTRA_IMAGE_URL, ImgurProxy.proxyUrl(url));
 		startActivity(intent);
 	}
 	
